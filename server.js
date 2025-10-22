@@ -15,16 +15,29 @@ const app = express();
 connectDB();
 
 // Configuration CORS plus détaillée
-app.use(
-  cors({
-    // Autoriser les origines front utilisées en développement
-    origin: ["http://localhost:3002", "http://localhost:3000"],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-    maxAge: 86400 // Cache préflight pour 24 heures
-  })
-);
+const allowedOrigins = [
+  "http://localhost:3002",
+  "http://localhost:3000",
+  process.env.FRONTEND_ORIGIN,
+  process.env.FRONTEND_ORIGIN_2,
+  "https://frontend-task-app-lake.vercel.app"
+].filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (/^https?:\/\/[^/]*vercel\.app$/i.test(origin)) return callback(null, true);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  maxAge: 86400
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Middleware pour parser le JSON
 app.use(express.json());
