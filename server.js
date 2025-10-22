@@ -43,8 +43,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-// Éviter le wildcard "*" qui provoque une erreur path-to-regexp avec Express 5
-app.options(["/", "/api/*", "/uploads/*"], cors(corsOptions));
 
 // Middleware pour parser le JSON
 app.use(express.json());
