@@ -31,9 +31,15 @@ const corsOptions = {
     return callback(new Error("Not allowed by CORS"));
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Accept",
+    "X-Requested-With"
+  ],
   credentials: true,
-  maxAge: 86400
+  maxAge: 86400,
+  optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
@@ -47,7 +53,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Middleware pour gérer les erreurs de promesses non gérées
+// ✅ Montage de la route
+app.use("/api/users", userRoutes); // très important
+app.use("/api/tasks", taskRoutes); // Montage des routes de tâches
+app.use("/api/projects", projectRoutes);
+app.use("/api/notifications", notificationRoutes);
+
+// Middleware pour gérer les erreurs de promesses non gérées (après les routes)
 app.use((err, req, res, next) => {
   console.error("Erreur non gérée:", err);
   res.status(500).json({
@@ -55,12 +67,6 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === "development" ? err.message : undefined
   });
 });
-
-// ✅ Montage de la route
-app.use("/api/users", userRoutes); // très important
-app.use("/api/tasks", taskRoutes); // Montage des routes de tâches
-app.use("/api/projects", projectRoutes);
-app.use("/api/notifications", notificationRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Serveur démarré sur le port ${PORT}`));
